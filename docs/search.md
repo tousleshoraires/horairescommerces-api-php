@@ -11,12 +11,18 @@ _https://ws.horaires-commerces.fr/rest/v3/search_
 Response formats | JSON
 Requires authentication? | Yes
 
+The phone number and the search term are exclusive. Either of them is mandatory. The term has priority on the phone number,
+meaning that if you are filling both variables, it will search only on the search term.
+The country is not exclusive.
+
 ### Parameters
-| Name | Required | Description |
-|---|---|---|
-| access_token  | Yes | Access token of the client |
-| s  | Yes | Term for the search |
-| count  | Optional | The number of elements to return |
+| Name | Required | Description | Example |
+|---|---|---|  |
+| access_token  | Yes | Access token of the client |  |
+| s  | Yes | Term for the search | darty lille |
+| count  | Optional | The number of elements to return, maximum 100 | 30 |
+| phone  | Optional | The phone number of the desired shops | 0123456789 |
+| country  | Optional | The iso code of the country to look into | fr |
 
 ### Example Request
 _GET https://ws.horaires-commerces.fr/rest/v3/search?access_token=ACCESS_TOKEN&s=SEARCH_TERM_
