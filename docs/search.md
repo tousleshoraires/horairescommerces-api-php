@@ -17,7 +17,7 @@ The country is not exclusive.
 
 ### Parameters
 | Name | Required | Description | Example |
-|---|---|---|  |
+|---|---|---|---|
 | access_token  | Yes | Access token of the client |  |
 | s  | Yes | Term for the search | darty lille |
 | count  | Optional | The number of elements to return, maximum 100 | 30 |
