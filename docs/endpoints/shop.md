@@ -1,11 +1,11 @@
 # Search
 
-## GET /search/:id
+## GET /shops/:id
 
 Returns a Shop matching the id if and only if the client has the right to access it.
 
 ### Resource URL
-_https://ws.horaires-commerces.fr/rest/v3/shop/:id_
+_https://ws.horaires-commerces.fr/rest/v3/shops/:id_
 
 ### Resource Information
 Response formats | JSON
@@ -18,7 +18,7 @@ Requires authentication? | Yes
 | access_token  | Yes | Access token of the client |  |
 
 ### Example Request
-_GET https://ws.horaires-commerces.fr/rest/v3/shop/123?access_token=ACCESS_TOKEN&s=SEARCH_TERM_
+_GET https://ws.horaires-commerces.fr/rest/v3/shops/123?access_token=ACCESS_TOKEN&s=SEARCH_TERM_
 
 ### Example Response
 ```
@@ -46,3 +46,37 @@ _GET https://ws.horaires-commerces.fr/rest/v3/shop/123?access_token=ACCESS_TOKEN
 - category:
     - id
     - name
+
+
+## GET /shops/:id/claim
+
+Claim a Shop matching the id if and only if the shop has not been claimed before.
+
+### Resource URL
+_https://ws.horaires-commerces.fr/rest/v3/shops/:id/claim_
+
+### Resource Information
+Response formats | JSON
+Requires authentication? | Yes
+
+### Parameters
+| Name | Required | Description | Example |
+|---|---|---|---|
+| id | Yes | ID of the Shop | 123 |
+| access_token  | Yes | Access token of the client |  |
+
+### Example Request
+_POST https://ws.horaires-commerces.fr/rest/v3/shops/123/claim --data "access_token=ACCESS_TOKEN"_
+
+### Example Response
+```
+{"message":"done"}
+```
+
+### Possible message
+| code | message | comment |
+|---|---|---|
+| 200 | done | you claimed the shop successfully |
+| 200 | already | you alread have claimed that shop |
+| 403 | not posible | the shop is already claimed |
+| 404 | object not found | there is no shop for that ID |
