@@ -3,7 +3,7 @@
 Available documentation
 -------------------------
 
-* [Authentication](authentication.md)
+* [Authentication](endpoints/authentication.md)
 * [Respnse code](response_code.md)
 * [Example](example.md)
 
