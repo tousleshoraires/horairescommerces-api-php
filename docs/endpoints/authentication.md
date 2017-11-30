@@ -1,6 +1,6 @@
 # Authentication Model for TLH API
 
-## GET /oauth/request_token
+## POST /oauth/request_token
 
 Returns a temporary request token for the authentication.
 
@@ -24,7 +24,7 @@ _POST https://ws.horaires-commerces.fr/rest/v3/oauth/request_token?client_id=CLI
 {"code":"REQUEST_TOKEN"}
 ```
 
-## GET /oauth/access_token
+## POST /oauth/access_token
 
 Returns an access token for the authentication.
 
@@ -41,7 +41,7 @@ Requires authentication? | No
 | code  | Yes | Code obtain during the request token |
 
 ### Example Request
-_GET https://ws.horaires-commerces.fr/rest/v3/oauth/access_token?code=REQUEST_TOKEN_
+_POST https://ws.horaires-commerces.fr/rest/v3/oauth/access_token?code=REQUEST_TOKEN_
 
 ### Example Response
 ```
