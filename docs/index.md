@@ -4,7 +4,7 @@ Available documentation
 -------------------------
 
 * [Authentication](authentication.md)
-* [Respnse code](response_code.md)
+* [Response code](response_code.md)
 * [Example](example.md)
 
 Endpoints
