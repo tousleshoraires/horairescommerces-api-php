@@ -59,7 +59,7 @@ class Client
         if (empty($this->httpClient)) {
             $this->httpClient = new GuzzleClient([
                 'base_uri' => self::API_ENDPOINT,
-                'auth' => [$this->clientId, $this->secret]
+                // 'auth' => [$this->clientId, $this->secret]
             ]);
         }
         
@@ -84,7 +84,7 @@ class Client
                 'GET',
                 $path,
                 [
-                    'body' => json_encode($parameters)
+                    'query' => $parameters
                 ]
             );
 
@@ -106,15 +106,24 @@ class Client
     {
         $path = $this->normalizePath($path);
 
+        $arguments = [
+            'headers' => ['Content-Type' => 'application/json'],
+            'body' => json_encode($parameters)
+        ];
+
+        /*
+         * Adding the Auth for Oauth request
+         */
+        if (preg_match("`/oauth/`", $path)) {
+            $arguments['auth'] = [$this->clientId, $this->secret];
+        }
+
         $response = $this
             ->getClient()
             ->request(
                 'POST',
                 $path,
-                [
-                    'headers' => ['Content-Type' => 'application/json'],
-                    'body' => json_encode($parameters)
-                ]
+                $arguments
             );
 
         $this->lastStatusCode = $response->getStatusCode();

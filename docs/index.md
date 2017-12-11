@@ -14,4 +14,4 @@ We brought together a complete reference index of the [endpoints](enpoints/index
 
 * [/categories](endpoints/categories.md)
 * [/search](endpoints/search.md)
-* [/shop](endpoints/shop.md)
+* [/shop](endpoints/shops/shops.md)
