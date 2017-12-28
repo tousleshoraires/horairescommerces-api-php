@@ -3,8 +3,8 @@
 Available documentation
 -------------------------
 
-* [Authentication](endpoints/authentication.md)
-* [Respnse code](response_code.md)
+* [Authentication](authentication.md)
+* [Response code](response_code.md)
 * [Example](example.md)
 
 Endpoints
@@ -14,4 +14,4 @@ We brought together a complete reference index of the [endpoints](enpoints/index
 
 * [/categories](endpoints/categories.md)
 * [/search](endpoints/search.md)
-* [/shop](endpoints/shop.md)
+* [/shop](endpoints/shops/shops.md)
