@@ -62,7 +62,7 @@ class Client
                 // 'auth' => [$this->clientId, $this->secret]
             ]);
         }
-        
+
         return $this->httpClient;
     }
 
@@ -107,17 +107,48 @@ class Client
         $path = $this->normalizePath($path);
 
         $arguments = [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => json_encode($parameters)
+            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'form_params' => $parameters
         ];
 
         /*
          * Adding the Auth for Oauth request
          */
         if (preg_match("`/oauth/`", $path)) {
-            $arguments['auth'] = [$this->clientId, $this->secret];
+            return $this->oauth($path, $parameters);
         }
 
+        return $this->call($path, $arguments);
+    }
+
+    /**
+     * Make POST requests to the API.
+     *
+     * @param string $path
+     * @param array  $parameters
+     *
+     * @return array|object
+     */
+    public function oauth($path, array $parameters = [])
+    {
+        $path = $this->normalizePath($path);
+
+        $arguments = [
+            'headers' => ['Content-Type' => 'application/json'],
+            'body' => json_encode($parameters),
+            'auth' => [$this->clientId, $this->secret]
+        ];
+
+        return $this->call($path, $arguments);
+    }
+
+    /**
+     * @param string $path
+     * @param array $arguments
+     * @return array|object
+     */
+    protected function call($path, $arguments)
+    {
         $response = $this
             ->getClient()
             ->request(
@@ -134,6 +165,6 @@ class Client
 
     protected function normalizePath($path)
     {
-        return ((preg_match("`^/`", $path)) ? self::API_PATH.$path : $path);
+        return ((preg_match("`^/(?!rest)`", $path)) ? self::API_PATH.$path : $path);
     }
 }
