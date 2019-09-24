@@ -4,11 +4,12 @@ namespace TLH\HorairesCommercesApi;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Exception;
+use TLH\HorairesCommercesApi\Model\TokenResponse;
 
 class Client
 {
     const API_ENDPOINT = 'https://ws.horaires-commerces.fr';
-    const API_PATH = '/rest/v3';
+    const API_PATH = '/api/v3';
 
     /**
      * string $clientId Id of the client.
@@ -29,12 +30,10 @@ class Client
     protected $lastResponse;
 
     /**
-     * Constructor.
-     *
      * @param string $clientId
      * @param string $secret
-     *
      * @return void
+     * @throws Exception
      */
     public function __construct($clientId = null, $secret = null)
     {
@@ -52,14 +51,13 @@ class Client
     /**
      * Returns the HTTP Client of the class.
      *
-     * @return GuzzleHttp\Client
+     * @return GuzzleClient
      */
     public function getClient()
     {
         if (empty($this->httpClient)) {
             $this->httpClient = new GuzzleClient([
-                'base_uri' => self::API_ENDPOINT,
-                // 'auth' => [$this->clientId, $this->secret]
+                'base_uri' => self::API_ENDPOINT
             ]);
         }
 
@@ -70,59 +68,83 @@ class Client
      * Make GET requests to the API.
      *
      * @param string $path
-     * @param array  $parameters
+     * @param string $token
+     * @param array $parameters
      *
      * @return array|object
      */
-    public function get($path, array $parameters = [])
+    public function get($path, $token, $parameters = [])
     {
+        if (empty($token)) {
+            throw new \LogicException('The token is missing.');
+        }
+
         $path = $this->normalizePath($path);
 
-        $response = $this
-            ->getClient()
-            ->request(
-                'GET',
-                $path,
-                [
-                    'query' => $parameters
-                ]
-            );
+        $arguments = [
+            'headers' => [
+                'Authorization' => 'Bearer '.$token
+            ],
+            'query' => $parameters
+        ];
 
-        $this->lastStatusCode = $response->getStatusCode();
-        $this->lastResponse = json_decode($response->getBody()->getContents(), true);
-
-        return $this->lastResponse;
+        return $this->call('GET', $path, $arguments);
     }
 
     /**
      * Make POST requests to the API.
      *
      * @param string $path
-     * @param array  $parameters
+     * @param string $token
+     * @param array $parameters
      *
      * @return array|object
      */
-    public function post($path, array $parameters = [])
+    public function post($path, $token, $parameters = [])
     {
+        if (empty($token)) {
+            throw new \LogicException('The token is missing.');
+        }
+
         $path = $this->normalizePath($path);
 
         $arguments = [
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'headers' => [
+                'Authorization' => 'Bearer '.$token,
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            ],
             'form_params' => $parameters
         ];
 
         /*
          * Adding the Auth for Oauth request
          */
-        if (preg_match("`/oauth/`", $path)) {
-            return $this->oauth($path, $parameters);
+        if (preg_match("`/tokens`", $path)) {
+            return $this->authenticate();
         }
 
-        return $this->call($path, $arguments);
+        return $this->call('POST', $path, $arguments);
     }
 
     /**
-     * Make POST requests to the API.
+     * Authenticate the user with the credentials received in the constructor.
+     *
+     * @return TokenResponse
+     */
+    public function authenticate()
+    {
+        $arguments = [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth' => [$this->clientId, $this->secret]
+        ];
+
+        $answer = $this->call('POST', self::API_PATH.'/tokens', $arguments);
+
+        return new TokenResponse($answer);
+    }
+
+    /**
+     * @deprecated Use the authenticate($path) method instead.
      *
      * @param string $path
      * @param array  $parameters
@@ -131,15 +153,7 @@ class Client
      */
     public function oauth($path, array $parameters = [])
     {
-        $path = $this->normalizePath($path);
-
-        $arguments = [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => json_encode($parameters),
-            'auth' => [$this->clientId, $this->secret]
-        ];
-
-        return $this->call($path, $arguments);
+        return $this->authenticate();
     }
 
     /**
@@ -147,15 +161,9 @@ class Client
      * @param array $arguments
      * @return array|object
      */
-    protected function call($path, $arguments)
+    protected function call($method, $path, $arguments)
     {
-        $response = $this
-            ->getClient()
-            ->request(
-                'POST',
-                $path,
-                $arguments
-            );
+        $response = $this->getClient()->request($method, $path, $arguments);
 
         $this->lastStatusCode = $response->getStatusCode();
         $this->lastResponse = json_decode($response->getBody()->getContents(), true);
@@ -165,6 +173,6 @@ class Client
 
     protected function normalizePath($path)
     {
-        return ((preg_match("`^/(?!rest)`", $path)) ? self::API_PATH.$path : $path);
+        return ((preg_match("`^/(?!api)`", $path)) ? self::API_PATH.$path : $path);
     }
 }

@@ -3,15 +3,19 @@
 Available documentation
 -------------------------
 
-* [Authentication](authentication.md)
-* [Response code](response_code.md)
-* [Example](example.md)
+The PHP client has three useful methods : 
+
+* authenticate()
+* get($path, $parameters)
+* post($path, $parameters)
+
+More on
+-------
+
+* [Authentication](endpoints/authentication.md)
+* [Swagger documentation](https://ws.horaires-commerces.fr/api/doc)
 
 Endpoints
 ---------
 
-We brought together a complete reference index of the [endpoints](enpoints/index.md).
-
-* [/categories](endpoints/categories.md)
-* [/search](endpoints/search.md)
-* [/shop](endpoints/shops/shops.md)
+The different endpoints are explained in the [swagger documentation](https://ws.horaires-commerces.fr/api/doc).
