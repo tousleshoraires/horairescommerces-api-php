@@ -4,11 +4,12 @@ namespace TLH\HorairesCommercesApi;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Exception;
+use TLH\HorairesCommercesApi\Model\TokenResponse;
 
 class Client
 {
-    const API_ENDPOINT = 'https://ws.horaires-commerces.fr';
-    const API_PATH = '/rest/v3';
+    const API_ENDPOINT = 'https://preprod.ws.horaires-commerces.fr';
+    const API_PATH = '/api/v3';
 
     /**
      * string $clientId Id of the client.
@@ -52,7 +53,7 @@ class Client
     /**
      * Returns the HTTP Client of the class.
      *
-     * @return GuzzleHttp\Client
+     * @return GuzzleClient
      */
     public function getClient()
     {
@@ -78,15 +79,9 @@ class Client
     {
         $path = $this->normalizePath($path);
 
-        $response = $this
-            ->getClient()
-            ->request(
-                'GET',
-                $path,
-                [
-                    'query' => $parameters
-                ]
-            );
+        $response = $this->getClient()->request('GET', $path, [
+            'query' => $parameters
+        ]);
 
         $this->lastStatusCode = $response->getStatusCode();
         $this->lastResponse = json_decode($response->getBody()->getContents(), true);
@@ -114,15 +109,32 @@ class Client
         /*
          * Adding the Auth for Oauth request
          */
-        if (preg_match("`/oauth/`", $path)) {
-            return $this->oauth($path, $parameters);
+        if (preg_match("`/tokens`", $path)) {
+            return $this->authenticate();
         }
 
         return $this->call($path, $arguments);
     }
 
     /**
-     * Make POST requests to the API.
+     * Authenticate the user with the credentials received in the constructor.
+     *
+     * @return TokenResponse
+     */
+    public function authenticate()
+    {
+        $arguments = [
+            'headers' => ['Content-Type' => 'application/json'],
+            'auth' => [$this->clientId, $this->secret]
+        ];
+
+        $answer = $this->call(self::API_PATH.'/tokens', $arguments);
+
+        return new TokenResponse($answer);
+    }
+
+    /**
+     * @deprecated Use the authenticate($path) method instead.
      *
      * @param string $path
      * @param array  $parameters
@@ -131,15 +143,7 @@ class Client
      */
     public function oauth($path, array $parameters = [])
     {
-        $path = $this->normalizePath($path);
-
-        $arguments = [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => json_encode($parameters),
-            'auth' => [$this->clientId, $this->secret]
-        ];
-
-        return $this->call($path, $arguments);
+        return $this->authenticate();
     }
 
     /**
@@ -149,13 +153,11 @@ class Client
      */
     protected function call($path, $arguments)
     {
-        $response = $this
-            ->getClient()
-            ->request(
-                'POST',
-                $path,
-                $arguments
-            );
+        $response = $this->getClient()->request(
+            'POST',
+            $path,
+            $arguments
+        );
 
         $this->lastStatusCode = $response->getStatusCode();
         $this->lastResponse = json_decode($response->getBody()->getContents(), true);
@@ -165,6 +167,6 @@ class Client
 
     protected function normalizePath($path)
     {
-        return ((preg_match("`^/(?!rest)`", $path)) ? self::API_PATH.$path : $path);
+        return ((preg_match("`^/(?!api)`", $path)) ? self::API_PATH.$path : $path);
     }
 }

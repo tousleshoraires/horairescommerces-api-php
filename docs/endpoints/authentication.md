@@ -1,49 +1,34 @@
-# Authentication Model for TLH API
+# Authentication for TLH API
 
-## POST /oauth/request_token
+The endpoint is explained in the [Swagger documentation](https://ws.horaires-commerces.fr/api/doc#operations-tag-authentication).
 
-Returns a temporary request token for the authentication.
+Getting the token is easy thanks to a proper method : _authenticate()_.
 
-### Resource URL
-_https://ws.horaires-commerces.fr/rest/v3/oauth/request_token_
+It accepts no parameter as the path is alwars the same. It uses the credentials provided in the controller.
 
-### Resource Information
-Response formats | JSON
-Requires authentication? | No
+## Response
 
-### Parameters
-| Name | Required | Description |
-|---|---|---|
-| client_id  | Yes | ID of the client |
+The response is an object TokenResponse. It has three properties :
 
-### Example Request
-_POST https://ws.horaires-commerces.fr/rest/v3/oauth/request_token?client_id=CLIENT_ID_
+* token: string of the token to use in the requests
+* user: array containing the basic information of the user (id and username)
+* expiresIn: number of seconds of validity of the token
 
-### Example Response
+## Example
+
 ```
-{"code":"REQUEST_TOKEN"}
-```
+<?php
 
-## POST /oauth/access_token
+require_once __DIR__.'/../vendor/autoload.php';
 
-Returns an access token for the authentication.
+use TLH\HorairesCommercesApi\Client as ApiClient;
 
-### Resource URL
-_https://ws.horaires-commerces.fr/rest/v3/oauth/access_token_
+$clientId = 'myClientId';
+$secretKey = 'thi$is$€cret';
 
-### Resource Information
-Response formats | JSON
-Requires authentication? | No
+$client = new ApiClient($clientId, $secretKey);
 
-### Parameters
-| Name | Required | Description |
-|---|---|---|
-| code  | Yes | Code obtain during the request token |
+$request = $client->authenticate();
 
-### Example Request
-_POST https://ws.horaires-commerces.fr/rest/v3/oauth/access_token?code=REQUEST_TOKEN_
-
-### Example Response
-```
-{"access_token":"ACCESS_TOKEN","expires_in":"EXPIRATION_TIME","token_type":"Bearer","scope":null}
+var_dump($request);
 ```
