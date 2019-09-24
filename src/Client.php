@@ -8,7 +8,7 @@ use TLH\HorairesCommercesApi\Model\TokenResponse;
 
 class Client
 {
-    const API_ENDPOINT = 'https://preprod.ws.horaires-commerces.fr';
+    const API_ENDPOINT = 'https://ws.horaires-commerces.fr';
     const API_PATH = '/api/v3';
 
     /**
@@ -30,12 +30,10 @@ class Client
     protected $lastResponse;
 
     /**
-     * Constructor.
-     *
      * @param string $clientId
      * @param string $secret
-     *
      * @return void
+     * @throws Exception
      */
     public function __construct($clientId = null, $secret = null)
     {
@@ -59,8 +57,7 @@ class Client
     {
         if (empty($this->httpClient)) {
             $this->httpClient = new GuzzleClient([
-                'base_uri' => self::API_ENDPOINT,
-                // 'auth' => [$this->clientId, $this->secret]
+                'base_uri' => self::API_ENDPOINT
             ]);
         }
 
@@ -71,38 +68,51 @@ class Client
      * Make GET requests to the API.
      *
      * @param string $path
-     * @param array  $parameters
+     * @param string $token
+     * @param array $parameters
      *
      * @return array|object
      */
-    public function get($path, array $parameters = [])
+    public function get($path, $token, $parameters = [])
     {
+        if (empty($token)) {
+            throw new \LogicException('The token is missing.');
+        }
+
         $path = $this->normalizePath($path);
 
-        $response = $this->getClient()->request('GET', $path, [
+        $arguments = [
+            'headers' => [
+                'Authorization' => 'Bearer '.$token
+            ],
             'query' => $parameters
-        ]);
+        ];
 
-        $this->lastStatusCode = $response->getStatusCode();
-        $this->lastResponse = json_decode($response->getBody()->getContents(), true);
-
-        return $this->lastResponse;
+        return $this->call('GET', $path, $arguments);
     }
 
     /**
      * Make POST requests to the API.
      *
      * @param string $path
-     * @param array  $parameters
+     * @param string $token
+     * @param array $parameters
      *
      * @return array|object
      */
-    public function post($path, array $parameters = [])
+    public function post($path, $token, $parameters = [])
     {
+        if (empty($token)) {
+            throw new \LogicException('The token is missing.');
+        }
+
         $path = $this->normalizePath($path);
 
         $arguments = [
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'headers' => [
+                'Authorization' => 'Bearer '.$token,
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            ],
             'form_params' => $parameters
         ];
 
@@ -113,7 +123,7 @@ class Client
             return $this->authenticate();
         }
 
-        return $this->call($path, $arguments);
+        return $this->call('POST', $path, $arguments);
     }
 
     /**
@@ -128,7 +138,7 @@ class Client
             'auth' => [$this->clientId, $this->secret]
         ];
 
-        $answer = $this->call(self::API_PATH.'/tokens', $arguments);
+        $answer = $this->call('POST', self::API_PATH.'/tokens', $arguments);
 
         return new TokenResponse($answer);
     }
@@ -151,13 +161,9 @@ class Client
      * @param array $arguments
      * @return array|object
      */
-    protected function call($path, $arguments)
+    protected function call($method, $path, $arguments)
     {
-        $response = $this->getClient()->request(
-            'POST',
-            $path,
-            $arguments
-        );
+        $response = $this->getClient()->request($method, $path, $arguments);
 
         $this->lastStatusCode = $response->getStatusCode();
         $this->lastResponse = json_decode($response->getBody()->getContents(), true);
